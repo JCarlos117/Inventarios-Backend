@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const prisma = require('../prismaClient');
 const router = express.Router();
 
+// 📌 REGISTRO
 router.post('/register', async (req, res) => {
   const { username, email, password, role, areaId } = req.body;
   try {
@@ -17,16 +18,33 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// 📌 LOGIN
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
+
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+  if (!user) {
+    console.log('❌ Usuario NO encontrado:', email);
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  console.log('🔍 Usuario encontrado:', user.email);
+  console.log('🧂 Hashed en DB:', user.password);
+  console.log('🛂 Password ingresada:', password);
 
   const match = await bcrypt.compare(password, user.password);
+  console.log('✅ ¿Coinciden?:', match);
+
   if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
-  res.json({ token });
+  const token = jwt.sign(
+    { id: user.id, role: user.role, username: user.username },
+    process.env.JWT_SECRET,
+    { expiresIn: '1d' }
+  );
+
+  res.json({ token, role: user.role, username: user.username });
 });
 
 module.exports = router;

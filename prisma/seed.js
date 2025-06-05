@@ -22,10 +22,20 @@ async function main() {
     data: {
       username: 'admin',
       email: 'admin@mail.com',
-      password: '$2b$10$GdVrPIgu7W57P3sY/.o69OV8GnNgF/pLtAhj26UC6UJz1vqKXPyLO', // "admin123"
+      password: '$2b$10$VryLLZT1AHtUGKLYLX.2YeAFeyqGWmtmmQmPCDUfQzURzakEk6snG', // "admin123"
       role: 'admin',
     }
   });
+
+  const anotherAdmin = await prisma.user.create({
+  data: {
+    username: 'admin2',
+    email: 'admin2@mail.com',
+    password: '$2b$10$GdVrPIgu7W57P3sY/.o69OV8GnNgF/pLtAhj26UC6UJz1vqKXPyLO', // "admin123"
+    role: 'admin',
+  }
+});
+
 
   const responsable = await prisma.user.create({
     data: {

@@ -8,6 +8,24 @@ router.get('/', verifyToken, authorizeRoles('admin'), async (req, res) => {
   res.json(users);
 });
 
+router.get('/responsables', authenticateToken, async (req, res) => {
+  try {
+    const responsables = await prisma.user.findMany({
+      where: { role: 'responsable' },
+      select: {
+        id: true,
+        username: true
+      }
+    });
+
+    res.json(responsables);
+  } catch (err) {
+    console.error('Error al obtener responsables:', err);
+    res.status(500).json({ message: 'Error al cargar responsables' });
+  }
+});
+
+
 router.post('/', verifyToken, authorizeRoles('admin'), async (req, res) => {
   const { username, email, password, role, areaId } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);

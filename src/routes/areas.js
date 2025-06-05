@@ -1,28 +1,28 @@
 const express = require('express');
-const prisma = require('../prismaClient');
-const { verifyToken, authorizeRoles } = require('../middleware/auth');
 const router = express.Router();
+const prisma = require('../prismaClient');
+const { authenticateToken } = require('../middleware/auth');
 
-router.get('/', verifyToken, async (req, res) => {
-  const areas = await prisma.area.findMany({
-    include: { responsable: true }
-  });
-  res.json(areas);
-});
-
-router.post('/', verifyToken, authorizeRoles('admin'), async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   const { name, description, responsableId } = req.body;
+
+  if (!name || !responsableId) {
+    return res.status(400).json({ message: "Faltan campos obligatorios" });
+  }
+
   try {
     const area = await prisma.area.create({
       data: {
         name,
         description,
-        responsable: responsableId ? { connect: { id: responsableId } } : undefined
+        responsableId: parseInt(responsableId)
       }
     });
-    res.json(area);
-  } catch (e) {
-    res.status(400).json({ error: 'Could not create area' });
+
+    res.status(201).json(area);
+  } catch (error) {
+    console.error("Error al crear área:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
   }
 });
 
